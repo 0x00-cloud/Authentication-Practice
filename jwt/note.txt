@@ -1,0 +1,11 @@
+complete the frontend functionality of this app to know to do authentication on both the front and th
+you should not pass the error while generating the jwr access token to the client 
+because this is your responsibility not the client
+but instead you should pass internal server error back and log the original erro for your purposes
+instead of doing
+reject(err)
+do
+log(err.message);
+reject(createError.InternalServerError())
+
+there is a problem in the dotenv package, check it out.
