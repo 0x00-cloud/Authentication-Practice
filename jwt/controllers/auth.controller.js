@@ -1,7 +1,7 @@
 const createError = require("http-errors");
 const User = require("../models/User.model");
 const { authSchema } = require("../helpers/validation_schema");
-const { signAccessToken } = require("../helpers/jwt_helper");
+const { signAccessToken, signRefershToken } = require("../helpers/jwt_helper");
 function authController() {
   return {
     async register(req, res, next) {
@@ -22,6 +22,7 @@ function authController() {
         });
         const savedUser = await user.save();
         const accessToken = await signAccessToken(savedUser.id);
+        const refreshToken = await signRefershToken(savedUser.id);
         res.send({ accessToken });
       } catch (error) {
         if (error.isJoi === true) error.status = 422;
@@ -42,7 +43,8 @@ function authController() {
           throw createError.Unauthorized("Username/password not valid");
         }
         const accessToken = await signAccessToken(user.id);
-        res.send({ accessToken });
+        const refreshToken = await signRefershToken(user.id);
+        res.send({ accessToken, refreshToken });
       } catch (error) {
         if (error.isJoi === true) {
           return next(createError.BadRequest("Invalid Username/Password"));
