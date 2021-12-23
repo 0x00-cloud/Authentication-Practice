@@ -4,7 +4,7 @@ const createError = require("http-errors");
 
 require("dotenv").config();
 require("./helpers/init_mongodb");
-
+require("./helpers/init.redis");
 const app = express();
 app.use(morgan("dev"));
 app.use(express.json());

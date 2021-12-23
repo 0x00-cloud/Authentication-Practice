@@ -1,7 +1,12 @@
 const createError = require("http-errors");
 const User = require("../models/User.model");
+const client = require("../helpers/init.redis");
 const { authSchema } = require("../helpers/validation_schema");
-const { signAccessToken, signRefershToken } = require("../helpers/jwt_helper");
+const {
+  signAccessToken,
+  signRefershToken,
+  verfiyRefreshToken,
+} = require("../helpers/jwt_helper");
 function authController() {
   return {
     async register(req, res, next) {
@@ -23,7 +28,7 @@ function authController() {
         const savedUser = await user.save();
         const accessToken = await signAccessToken(savedUser.id);
         const refreshToken = await signRefershToken(savedUser.id);
-        res.send({ accessToken });
+        res.send({ accessToken, refreshToken });
       } catch (error) {
         if (error.isJoi === true) error.status = 422;
         next(error);
@@ -37,7 +42,6 @@ function authController() {
           throw createError.NotFound("User not registered");
         }
         const isMatch = await user.isValidPassword(result.password);
-        console.log(isMatch);
 
         if (!isMatch) {
           throw createError.Unauthorized("Username/password not valid");
@@ -50,6 +54,40 @@ function authController() {
           return next(createError.BadRequest("Invalid Username/Password"));
         }
         next(error);
+      }
+    },
+    async refreshToken(req, res, next) {
+      try {
+        let { refreshToken } = req.body;
+        if (!refreshToken) {
+          throw createError.BadRequest();
+        }
+        const userId = await verfiyRefreshToken(refreshToken);
+
+        const accessToken = await signAccessToken(userId);
+        refreshToken = await signRefershToken(userId);
+        res.send({ accessToken, refreshToken });
+      } catch (error) {
+        next(error);
+      }
+    },
+    async logout(req, res, next) {
+      const { refreshToken } = req.body;
+      if (!refreshToken) {
+        throw createError.BadRequest();
+      }
+      try {
+        const userId = await verfiyRefreshToken(refreshToken);
+        client.del(userId, (err, val) => {
+          if (err) {
+            console.log(err.message);
+            throw createError.InternalServerError();
+          }
+          console.log(val);
+          res.send({ message: "You've logged out successfully!" });
+        });
+      } catch (err) {
+        next(err);
       }
     },
   };

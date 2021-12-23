@@ -6,6 +6,9 @@ instead of doing
 reject(err)
 do
 log(err.message);
-reject(createError.InternalServerError())
+reject(createError.InternalServerError()) 
 
 there is a problem in the dotenv package, check it out.
+
+
+add a logging mehanism for all error

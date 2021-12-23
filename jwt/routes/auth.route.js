@@ -6,10 +6,6 @@ router.post("/register", authController.register);
 
 router.post("/login", authController.login);
 
-router.post("/refresh-token", (req, res, next) => {
-  res.send("refresh token");
-});
-router.delete("/logout", (req, res, next) => {
-  res.send("logout route");
-});
+router.post("/refresh-token", authController.refreshToken);
+router.delete("/logout", authController.logout);
 module.exports = router;
